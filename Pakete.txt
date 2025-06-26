@@ -1,5 +1,5 @@
-import sqlite3
-import pandas as pd
-import ipywidgets as widgets
-import psycopg2
-import streamlit as st
+sqlite3
+pandas
+ipywidgets
+psycopg2
+streamlit
