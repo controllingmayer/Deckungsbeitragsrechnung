@@ -1,53 +1,63 @@
-# streamlit run C:\Users\qliksense\Deckungsbeitragsrechnung\Test.py
-
-
 import streamlit as st
 import psycopg2
 
-# Verbindung zur PostgreSQL-Datenbank
-def get_connection():
-    return psycopg2.connect(
-        dbname="Deckungsbeitragsrechnung",
-        user="postgres",
-        password="Mayer#79513",
-        host="localhost",
-        port="5432"
-    )
+# 🔌 Verbindung zu Supabase
+conn = psycopg2.connect(
+    host=st.secrets["db_host"],
+    user=st.secrets["db_user"],
+    password=st.secrets["db_password"],
+    dbname=st.secrets["db_name"],
+    port=st.secrets["db_port"]
+)
+cursor = conn.cursor()
 
-# Spaltennamen definieren
-SPALTEN = [
-    "Artikel", "Rabattgruppe", "Rabattgruppename", "ArtikelPreiseinheit",
-    "LagerME", "Mengeneinheit", "Spartenbez", "ArtikelBez",
-    "ArtikelgruppeBez", "HauptgruppeBez", "WarengruppeBez"
-]
+st.title("🔍 Artikeldetails anzeigen")
 
-# UI
-st.title("🔍 Artikeldaten anzeigen")
-
+# 🧾 Eingabefeld
 artikelnummer = st.text_input("Artikelnummer eingeben:")
 
-# Nur abfragen, wenn was eingegeben wurde
-if artikelnummer.strip():
-    try:
-        conn = get_connection()
-        cursor = conn.cursor()
+# 🔍 Datenbankabfrage
+if artikelnummer:
+    cursor.execute("""
+        SELECT
+            Rabattgruppe,
+            Rabattgruppename,
+            ArtikelPreiseinheit,
+            LagerME,
+            Mengeneinheit,
+            Spartenbez,
+            ArtikelBez,
+            ArtikelgruppeBez,
+            HauptgruppeBez,
+            WarengruppeBez
+        FROM artikel
+        WHERE Artikel = %s
+        LIMIT 1
+    """, (artikelnummer,))
+    
+    result = cursor.fetchone()
 
-        cursor.execute("""
-            SELECT * FROM artikel WHERE Artikel = %s
-        """, (artikelnummer,))
-        result = cursor.fetchone()
+    if result:
+        (
+            rabattgruppe, rabattgruppename, einheit,
+            lagerme, menge, spartenbez, artikelbez,
+            artikelgruppe, hauptgruppe, warengruppe
+        ) = result
 
-        cursor.close()
-        conn.close()
+        st.success(f"✅ Artikel gefunden: {artikelbez}")
+        st.markdown(f"**Artikelnummer:** `{artikelnummer}`")
+        st.markdown(f"**Rabattgruppe:** {rabattgruppe}")
+        st.markdown(f"**Rabattgruppename:** {rabattgruppename}")
+        st.markdown(f"**Preiseinheit:** {einheit}")
+        st.markdown(f"**Lagereinheit:** {lagerme}")
+        st.markdown(f"**Mengeneinheit:** {menge}")
+        st.markdown(f"**Spartenbezeichnung:** {spartenbez}")
+        st.markdown(f"**Artikelgruppe:** {artikelgruppe}")
+        st.markdown(f"**Hauptgruppe:** {hauptgruppe}")
+        st.markdown(f"**Warengruppe:** {warengruppe}")
+    else:
+        st.error("❌ Kein Artikel mit dieser Nummer gefunden.")
 
-        if result:
-            st.success("✅ Artikel gefunden")
-            daten = dict(zip(SPALTEN, result))
-            st.write("### 📄 Details:")
-            for key, value in daten.items():
-                st.markdown(f"- **{key}**: {value}")
-        else:
-            st.warning("❗ Artikelnummer nicht gefunden.")
-
-    except Exception as e:
-        st.error(f"Fehler beim Zugriff auf die Datenbank: {e}")
+# 🔒 Verbindung sauber schließen
+cursor.close()
+conn.close()
