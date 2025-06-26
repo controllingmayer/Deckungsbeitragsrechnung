@@ -3,18 +3,11 @@ import psycopg2
 
 # 🔌 Verbindung zur Supabase-Datenbank über secrets.toml
 try:
-    conn = psycopg2.connect(
-        host=st.secrets["db_host"],
-        user=st.secrets["db_user"],
-        password=st.secrets["db_password"],
-        dbname=st.secrets["db_name"],
-        port=st.secrets["db_port"]
-    )
-    cursor = conn.cursor()
+    conn = psycopg2.connect(st.secrets["db_uri"])
+    st.success("✅ Verbindung erfolgreich!")
+    conn.close()
 except Exception as e:
-    st.error(f"❌ Fehler beim Aufbau der Datenbankverbindung: {e}")
-    st.stop()
-
+    st.error(f"❌ Fehler:\n\n{e}")
 st.title("🔍 Artikeldetails anzeigen")
 
 # 🧾 Eingabefeld für Artikelnummer
