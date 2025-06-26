@@ -1,5 +1,5 @@
 sqlite3
 pandas
 ipywidgets
-psycopg2-binary
 streamlit
+psycopg2-binary
