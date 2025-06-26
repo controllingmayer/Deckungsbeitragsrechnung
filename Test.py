@@ -1,8 +1,8 @@
 # streamlit run C:\Users\qliksense\Deckungsbeitragsrechnung\Test.py
 
 
-import streamlit as st
-import psycopg2
+#import streamlit as st
+#import psycopg2
 
 # Verbindung zur PostgreSQL-Datenbank
 def get_connection():
